@@ -14,7 +14,7 @@ PWD = os.getenv("MSSQL_PASSWORD")
 HOST = os.getenv("MSSQL_HOST", "localhost")
 PORT = os.getenv("MSSQL_PORT", "1433")
 DB   = os.getenv("MSSQL_DB", "DB_HSB")
-DRV  = os.getenv("MSSQL_DRIVER", "ODBC Driver 17 for SQL Server")
+DRV  = os.getenv("MSSQL_DRIVER", "ODBC Driver 18 for SQL Server")
 TRUST= os.getenv("MSSQL_TRUST_CERT", "yes")  # yes|no
 
 # Cadena de conexión (pyodbc)
