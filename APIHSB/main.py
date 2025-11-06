@@ -1,5 +1,6 @@
 import os
 from typing import List, Optional
+from datetime import datetime
 
 from fastapi import FastAPI, Query, Body, HTTPException, Form
 from pydantic import BaseModel
@@ -41,12 +42,12 @@ class HCItem(BaseModel):
     HC_x_Personanrodocumento: Optional[str] = None
     HCEstado: Optional[str] = None
     CajasHCId: Optional[int] = None
-    CajasHCFechaBaja: Optional[str] = None
+    CajasHCFechaBaja: Optional[datetime] = None
     CajasId: Optional[int] = None
     CajasBC: Optional[str] = None
 
 
-@app.get("/hc", response_model=List[HCItem])
+@app.get("/doc", response_model=List[HCItem])
 def get_hc(
     hcbarcodes: List[str] = Query(
         default=[],
@@ -118,19 +119,14 @@ def get_hc(
 
     return [dict(row) for row in rows]
 
-@app.post("/hc/buscar", response_model=HCItem)
-def buscar_hc(
-    documento: Optional[str] = Query(default=None),
-    documento_form: Optional[str] = Form(default=None, alias="documento"),
-    data: Optional[dict] = Body(default=None),
-):
-    if not documento and documento_form:
-        documento = documento_form
-    if not documento and data:
-        documento = data.get("documento")
-    if not documento:
-        raise HTTPException(status_code=400, detail="Falta el campo 'documento'.")
-    sql = text("""
+
+
+
+
+@app.get("/barcode/{hcbarcode}", response_model=HCItem)
+def get_barcode_unique(hcbarcode: str):
+    sql = text(
+        """
         SELECT TOP 1
             h.HCId,
             h.HCBarCode,
@@ -144,12 +140,13 @@ def buscar_hc(
         FROM [DB_HSB].[dbo].[HC] h
         JOIN CajasHC ch ON h.HCId = ch.HCId
         JOIN Cajas c     ON c.CajasId = ch.CajasId
-        WHERE h.HC_x_Personanrodocumento = :doc
+        WHERE h.HCBarCode = :bc
           AND ch.CajasHCFechaBaja IS NULL
         ORDER BY h.HCId DESC
-    """)
+        """
+    )
     with engine.connect() as conn:
-        row = conn.execute(sql, {"doc": documento}).mappings().first()
+        row = conn.execute(sql, {"bc": hcbarcode}).mappings().first()
     if not row:
-        raise HTTPException(status_code=404, detail="No se encontró el documento.")
-    return dict(row)    
+        raise HTTPException(status_code=404, detail="No se encontró el HCBarCode indicado.")
+    return dict(row)
