@@ -123,30 +123,45 @@ def get_hc(
 
 
 
-@app.get("/barcode/{hcbarcode}", response_model=HCItem)
-def get_barcode_unique(hcbarcode: str):
-    sql = text(
-        """
-        SELECT TOP 1
-            h.HCId,
-            h.HCBarCode,
-            h.HC_x_PersonaApellidoNombre,
-            h.HC_x_Personanrodocumento,
-            h.HCEstado,
-            ch.CajasHCId,
-            ch.CajasHCFechaBaja,
-            c.CajasId,
-            c.CajasBC
-        FROM [DB_HSB].[dbo].[HC] h
-        JOIN CajasHC ch ON h.HCId = ch.HCId
-        JOIN Cajas c     ON c.CajasId = ch.CajasId
-        WHERE h.HCBarCode = :bc
-          AND ch.CajasHCFechaBaja IS NULL
-        ORDER BY h.HCId DESC
-        """
-    )
+@app.get("/barcode/{hcbarcode}")
+def get_barcode_unique(
+    hcbarcode: str,
+    incluir_bajas: bool = Query(default=False, description="Si true, devolver diccionario con y sin baja."),
+):
+    base_select = """
+    SELECT TOP 1
+        h.HCId,
+        h.HCBarCode,
+        h.HC_x_PersonaApellidoNombre,
+        h.HC_x_Personanrodocumento,
+        h.HCEstado,
+        ch.CajasHCId,
+        ch.CajasHCFechaBaja,
+        c.CajasId,
+        c.CajasBC
+    FROM [DB_HSB].[dbo].[HC] h
+    JOIN CajasHC ch ON h.HCId = ch.HCId
+    JOIN Cajas c     ON c.CajasId = ch.CajasId
+    WHERE h.HCBarCode = :bc
+    {extra}
+    ORDER BY h.HCId DESC
+    """
+
     with engine.connect() as conn:
-        row = conn.execute(sql, {"bc": hcbarcode}).mappings().first()
-    if not row:
-        raise HTTPException(status_code=404, detail="No se encontró el HCBarCode indicado.")
-    return dict(row)
+        if incluir_bajas:
+            sql_sin = text(base_select.format(extra="AND ch.CajasHCFechaBaja IS NULL"))
+            sql_con = text(base_select.format(extra="AND ch.CajasHCFechaBaja IS NOT NULL"))
+            sin_baja = conn.execute(sql_sin, {"bc": hcbarcode}).mappings().first()
+            con_baja = conn.execute(sql_con, {"bc": hcbarcode}).mappings().first()
+            if not sin_baja and not con_baja:
+                raise HTTPException(status_code=404, detail="No se encontró el HCBarCode indicado.")
+            return {
+                "sin_baja": dict(sin_baja) if sin_baja else None,
+                "con_baja": dict(con_baja) if con_baja else None,
+            }
+        else:
+            sql_activo = text(base_select.format(extra="AND ch.CajasHCFechaBaja IS NULL"))
+            row = conn.execute(sql_activo, {"bc": hcbarcode}).mappings().first()
+            if not row:
+                raise HTTPException(status_code=404, detail="No se encontró el HCBarCode indicado.")
+            return dict(row)
