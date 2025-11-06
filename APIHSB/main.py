@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Body, HTTPException, Form
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
@@ -117,3 +117,39 @@ def get_hc(
         rows = conn.execute(text(base_sql), params).mappings().all()
 
     return [dict(row) for row in rows]
+
+@app.post("/hc/buscar", response_model=HCItem)
+def buscar_hc(
+    documento: Optional[str] = Query(default=None),
+    documento_form: Optional[str] = Form(default=None, alias="documento"),
+    data: Optional[dict] = Body(default=None),
+):
+    if not documento and documento_form:
+        documento = documento_form
+    if not documento and data:
+        documento = data.get("documento")
+    if not documento:
+        raise HTTPException(status_code=400, detail="Falta el campo 'documento'.")
+    sql = text("""
+        SELECT TOP 1
+            h.HCId,
+            h.HCBarCode,
+            h.HC_x_PersonaApellidoNombre,
+            h.HC_x_Personanrodocumento,
+            h.HCEstado,
+            ch.CajasHCId,
+            ch.CajasHCFechaBaja,
+            c.CajasId,
+            c.CajasBC
+        FROM [DB_HSB].[dbo].[HC] h
+        JOIN CajasHC ch ON h.HCId = ch.HCId
+        JOIN Cajas c     ON c.CajasId = ch.CajasId
+        WHERE h.HC_x_Personanrodocumento = :doc
+          AND ch.CajasHCFechaBaja IS NULL
+        ORDER BY h.HCId DESC
+    """)
+    with engine.connect() as conn:
+        row = conn.execute(sql, {"doc": documento}).mappings().first()
+    if not row:
+        raise HTTPException(status_code=404, detail="No se encontró el documento.")
+    return dict(row)    
