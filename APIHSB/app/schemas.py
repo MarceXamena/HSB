@@ -18,5 +18,5 @@ class DocRequest(BaseModel):
 
 class BajaRequest(BaseModel):
     HCBarCode: str
-    CajasHCId: int
-    UsuarioBaja: int
+    CajasHCId: Optional[int] = None
+    UsuarioBaja: Optional[int] = None

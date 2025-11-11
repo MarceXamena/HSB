@@ -79,7 +79,15 @@ def marcar_baja(data: BajaRequest):
     SET
         CajasHCFechaBaja = GETDATE(),
         CajasHCUsuarioBaja = :usuario
-    WHERE CajasHCId = :cajasid;
+    WHERE CajasHCId = (
+      SELECT ch.CajasHCId 
+		  FROM HC h
+		  JOIN CajasHC ch ON h.HCId = ch.HCId 
+		  JOIN Cajas c ON c.CajasId = ch.CajasId 
+		  WHERE
+		    h.HCBarCode = :barcode
+            AND ch.CajasHCFechaBaja IS NULL
+    );
 
     COMMIT TRANSACTION;
     """)
@@ -89,7 +97,6 @@ def marcar_baja(data: BajaRequest):
             conn.execute(sql, {
                 "barcode": data.HCBarCode,
                 "usuario": data.UsuarioBaja,
-                "cajasid": data.CajasHCId
             })
         return {"success": True, "message": "HC cargada y CajasHC actualizada correctamente."}
     except Exception as e:
