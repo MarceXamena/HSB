@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+.env.*
+
+# Tools
+/.mypy_cache/
+/.ruff_cache/
+/pytest_cache/
+
+# Alembic
+api/alembic/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+.mypy_cache/
+.ruff_cache/
+pytest_cache/
+

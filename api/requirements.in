@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy>=2.0
+aioodbc
+pyodbc
+alembic
+pydantic>=2
+pydantic-settings
+python-dotenv
+httpx
+
+# Dev
+pytest
+pytest-asyncio
+pytest-cov
+ruff
+mypy
