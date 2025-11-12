@@ -1,5 +1,5 @@
 # app/main.py
-from fastapi import FastAPI
+'''from fastapi import FastAPI
 from app.db import ping
 from app.routes import router
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,3 +20,11 @@ def health(): return {"ok": True}
 
 app.include_router(router)
 
+'''
+from fastapi import APIRouter
+
+router = APIRouter()
+
+@router.get("/health", tags=["health"])
+async def health():
+    return {"status": "ok"}

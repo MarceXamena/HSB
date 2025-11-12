@@ -1,11 +1,19 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*.egg-info/
 .venv/
 .env
+.env.*
 
-# IDE
-.vscode/
-.idea/
+# Tools
+/.mypy_cache/
+/.ruff_cache/
+/pytest_cache/
+
+# Alembic
+api/alembic/*.log
+
+# OS
+.DS_Store
+Thumbs.db
