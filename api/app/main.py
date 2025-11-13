@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.settings import settings
-from app.api.v1.health import router as health_router
+from app.api.v1.hc import router as health_router
 
 app = FastAPI(title="HSB API")
 app.add_middleware(

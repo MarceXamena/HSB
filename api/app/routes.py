@@ -29,7 +29,7 @@ def get_hc_por_documento(documento: str):
     return dict(row)
 
 @router.get("/hc", response_model=List[HCItem])
-def get_hc(hcbarcodes: List[str] = Query(default=[]),
+def get_hc_por_barcode(hcbarcodes: List[str] = Query(default=[]),
            documento: str | None = None,
            incluir_bajas: bool = False,
            limit: int = Query(100, ge=1, le=1000),
