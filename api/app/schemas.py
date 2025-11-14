@@ -20,3 +20,4 @@ class BajaRequest(BaseModel):
     HCBarCode: str
     CajasHCId: Optional[int] = None
     UsuarioBaja: Optional[int] = None
+
