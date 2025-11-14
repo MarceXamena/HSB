@@ -1,9 +1,7 @@
-from app.schemas import ArticuloItem
+from app.schemas.deposito import ArticuloItem
 from sqlalchemy import text
 from app.db import engine
-from fastapi import HTTPException
-from fastapi import APIRouter
-from fastapi import Query
+from fastapi import HTTPException, APIRouter, Query
 from typing import List
 router = APIRouter()
 

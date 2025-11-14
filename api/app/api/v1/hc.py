@@ -1,4 +1,4 @@
-from app.schemas import BajaRequest
+from app.schemas.hc import BajaRequest
 from sqlalchemy import text
 from app.db import engine
 from fastapi import HTTPException
